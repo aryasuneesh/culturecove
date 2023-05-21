@@ -1,12 +1,25 @@
 import streamlit as st
-from streamlit_folium import folium_static
 import folium
+from streamlit_folium import folium_static
 import pandas as pd
+from pymongo.mongo_client import MongoClient
+from pymongo.server_api import ServerApi
+import os
+from dotenv.main import load_dotenv
+
+load_dotenv()
 
 # Global variables
 MAP_CENTER = [0, 0]
 MARKER_ICON = folium.Icon(icon="info-sign", prefix="fa")
 REVIEWS_FILE = "reviews.csv"
+DB_PASSWORD = os.getenv("DB_PASSWORD")
+
+# Connect to MongoDB Atlas
+uri = f"mongodb+srv://aryasuneesh3:{DB_PASSWORD}@ccluster.a0eszym.mongodb.net/?retryWrites=true&w=majority"
+client = MongoClient(uri, server_api=ServerApi('1'))
+db = client["hidden-places"]
+places_collection = db["places"]
 
 # Initialize reviews DataFrame
 reviews_df = pd.DataFrame(columns=["Place", "Description", "Review"])
@@ -36,11 +49,24 @@ def mark_place_on_map(latitude, longitude, place_name, description, review):
     new_review = {"Place": place_name, "Description": description, "Review": review}
     reviews_df = pd.concat([reviews_df, pd.DataFrame(new_review, index=[0])], ignore_index=True)
 
+    # Save place to MongoDB
+    place_data = {
+        "place_name": place_name,
+        "latitude": latitude,
+        "longitude": longitude,
+        "description": description,
+        "review": review
+    }
+    places_collection.insert_one(place_data)
+
 # Helper function to add a review to a place
 def add_review(place_name, review_text):
     global reviews_df
     new_review = {"Place": place_name, "Description": "", "Review": review_text}
     reviews_df = pd.concat([reviews_df, pd.DataFrame(new_review, index=[0])], ignore_index=True)
+
+    # Update review in MongoDB
+    places_collection.update_one({"place_name": place_name}, {"$set": {"review": review_text}})
 
 # Helper function to get the average rating for a place
 def get_average_rating(place_name):
