@@ -8,3 +8,8 @@
   <img src="https://skillicons.dev/icons?i=py,github">
 </p>
 
+- - - 
+
+CultureCove is a web application that allows users to explore hidden places of art and culture on an interactive map. Users can view markers on the map representing various cultural sites and click on them to learn more about each place, including its name and description. Additionally, users can add new places and write reviews for existing places, creating a collaborative platform for cultural enthusiasts.
+
+CultureCove was built using Streamlit, a Python web framework, along with Folium for map visualization. The backend logic is written in Python, while the frontend interface is created using Streamlit's interactive components. JSON files are used to store the data about the places, including their names, locations, descriptions, and reviews.
